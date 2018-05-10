@@ -1,0 +1,49 @@
+module cruisecontrol:
+
+%Version 1 of cruise control
+%Is it going to produce the correct count value?
+%declarations of data-handling functions in C
+
+%Below are functions to be defined in cruisecontrol_data.c ?
+%procedure send()(integer);
+%procedure recv1(string)();
+%function outCount(): integer;
+
+%interface declarations
+input On Off Resume Set QuickDecel QuickAccel;
+input Accel:float, Brake:float, Speed:float;
+output CruiseSpeed:float, ThrottleCmd:float;
+output CruiseState enum{OFF, ON, STDBY, DISABLE};
+
+% below is old code form lab1
+[
+%consumer thread
+loop
+	var data: string in	
+		await tick;
+		emit message("waiting another tick");
+		await tick;		
+		pause;
+		call recv1(data)();
+		%data := "My message";
+		emit message(data);
+	end var
+end loop
+]
+||
+[
+%thread emitting the current count value
+loop
+	pause;
+	emit count(outCount());
+end loop
+]
+||
+[
+%producer thread
+loop
+	await svalue;
+	call send()(?svalue);
+end loop
+]
+end module
