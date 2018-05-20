@@ -17,33 +17,20 @@ output CruiseState enum{OFF, ON, STDBY, DISABLE};
 
 % below is old code form lab1
 [
-%consumer thread
-loop
-	var data: string in	
-		await tick;
-		emit message("waiting another tick");
-		await tick;		
-		pause;
-		call recv1(data)();
-		%data := "My message";
-		emit message(data);
-	end var
-end loop
+%thread
+
 ]
+
 ||
+
 [
-%thread emitting the current count value
-loop
-	pause;
-	emit count(outCount());
-end loop
+%thread 
 ]
+
 ||
+
 [
-%producer thread
-loop
-	await svalue;
-	call send()(?svalue);
-end loop
+%thread
+
 ]
 end module
