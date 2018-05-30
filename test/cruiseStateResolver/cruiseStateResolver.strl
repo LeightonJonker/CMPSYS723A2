@@ -1,0 +1,79 @@
+module cruiseStateResolver:
+
+input SpeedExceed;
+input BrakePressed;
+input AccelPressed;
+input On;
+input Off;
+input Resume;
+output isGoingOn : boolean;
+output cruiseState := 1 : integer; %1 = OFF; 2 = ON; 3 = STDBY; 4 = DISABLE
+
+var state := 1 : integer in
+loop
+
+    await tick;
+    if state = 1 then
+        present (On and not Off) then
+            state := 2;
+            emit cruiseState(2);
+            emit isGoingOn(true);
+        else 
+            state := 1;
+            emit cruiseState(1);
+            emit isGoingOn(false);
+        end present;
+    elsif state = 2 then
+        present not(SpeedExceed or AccelPressed or BrakePressed or Off) then
+            state := 2;
+            emit cruiseState(2);
+            emit isGoingOn(false);
+        end present;
+        present ((SpeedExceed or AccelPressed) and not BrakePressed) then
+            state := 4;
+            emit cruiseState(4);
+            emit isGoingOn(false);
+        end present;
+        present Off and not (BrakePressed or On) then
+            state := 1;
+            emit cruiseState(1);
+            emit isGoingOn(false);
+        end present;
+        present (BrakePressed) then
+            state := 3;
+            emit cruiseState(3);
+            emit isGoingOn(false);
+        end present;
+    elsif state = 3 then
+        present (BrakePressed or not Resume) then
+            state := 3;
+            emit cruiseState(3);
+            emit isGoingOn(false);
+        end present;
+        present (Resume and (AccelPressed or SpeedExceed)) then
+            state := 4;
+            emit cruiseState(4);
+            emit isGoingOn(false);
+        end present;
+        present (Resume and not(BrakePressed or AccelPressed or SpeedExceed)) then
+            state := 2;
+            emit cruiseState(2);
+            emit isGoingOn(true);
+        end present;
+    elsif state = 4 then
+        present (SpeedExceed or AccelPressed) then
+            state := 4;
+            emit cruiseState(4);
+            emit isGoingOn(false);
+        else
+            state := 2;
+            emit cruiseState(2);
+            emit isGoingOn(true);
+        end present;
+    end if;
+
+end loop;
+end var;
+
+
+end module
