@@ -1,0 +1,22 @@
+module throttleController:
+
+%Below are functions to be defined in cruisecontrol_data.c
+%function saturateThrottle(float, boolean) : float;
+function regulateThrottle(boolean, float, float) : float;
+
+input cruiseState := 1 : integer;
+input isGoingOn : boolean;
+input cruiseSpeed : float;
+input speed : float;
+output ThrottleCmd : float;
+
+loop
+    await cruiseState;
+    if ?cruiseState = 2 then
+        emit ThrottleCmd(regulateThrottle(?isGoingOn,?cruiseSpeed,?speed));
+    else
+        emit ThrottleCmd(0.0f);
+    end if;
+end loop;
+
+end module
