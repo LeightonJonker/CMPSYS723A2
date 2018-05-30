@@ -1,0 +1,13 @@
+module accelMonitor:
+
+constant minPedals = 3.0f : float;
+input Accel : float; %Car accelerator sensor
+output AccelPressed; %Signal whether accelerator is pressed or not
+
+loop
+    await immediate Accel;
+    if ?Accel > minPedals then
+        emit AccelPressed;
+    end if;
+end loop
+end module

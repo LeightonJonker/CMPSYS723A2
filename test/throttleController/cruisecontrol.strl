@@ -46,24 +46,7 @@ end loop
 end module
 
 module cruiseSpeedMonitor:
-
-%constant minSpeed = 30 : integer;
-%constant maxSpeed = 150 : integer;
-input cruiseSpeed : float; %the set cruise speed
-output csExceedMin;
-output csExceedMax;
-
-loop
-    await cruiseSpeed;
-    if ?cruiseSpeed > 150.0 then
-        emit csExceedMax;
-    end if;
-
-    if ?cruiseSpeed < 30.0 then
-        emit csExceedMin;
-    end if;
-end loop
-end module
+end module;
 
 module cruiseStateResolver:
 end module;

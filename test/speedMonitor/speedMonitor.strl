@@ -1,0 +1,16 @@
+module speedMonitor:
+
+constant minSpeed = 30.0f : float;
+constant maxSpeed = 150.0f : float;
+input Speed : float; %Car speed sensor
+output SpeedExceed; %Signal whether min/max speed exceeded
+
+loop
+    await immediate Speed;
+    if ?Speed > maxSpeed then
+        emit SpeedExceed;
+    elsif ?Speed < minSpeed then
+        emit SpeedExceed;
+    end if;
+end loop
+end module

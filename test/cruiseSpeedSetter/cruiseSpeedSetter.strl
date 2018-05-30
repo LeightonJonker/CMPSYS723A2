@@ -1,0 +1,53 @@
+module cruiseSpeedSetter:
+
+constant SpeedInc = 2.5f : float;
+constant minSpeed = 30.0f : float;
+constant maxSpeed = 150.0f : float;
+
+input cruiseState := 1 : integer; %1 = OFF, 2 = ON, 3 = STDBY, 4 = DISABLE
+input Set;
+input QuickAccel;
+input QuickDecel;
+input csExceedMin;
+input csExceedMax;
+input speed : float;
+output cruiseSpeed : float;
+
+loop
+    await cruiseState;
+    if not (?cruiseState = 1) then
+        emit cruiseSpeed(?speed);
+        loop
+            await cruiseState;
+            if not (?cruiseState = 1) then
+                
+                present csExceedMin then
+                    emit cruiseSpeed(minSpeed);
+                    pause;
+                end present;
+
+                present csExceedMax then
+                    emit cruiseSpeed(maxSpeed);
+                    pause;
+                end present;
+                
+                present Set then
+                    emit cruiseSpeed(?speed);
+                    pause;
+                end present;
+                
+                present QuickDecel then
+                    emit cruiseSpeed(pre(?cruiseSpeed) - SpeedInc);
+                    pause;
+                end present;
+
+                present QuickAccel then
+                    emit cruiseSpeed(pre(?cruiseSpeed) + SpeedInc);
+                    pause;
+                end present;
+                
+            end if;
+        end loop;
+    end if;
+end loop;
+end module

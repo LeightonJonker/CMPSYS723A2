@@ -1,0 +1,56 @@
+ssc5:
+module:accelMonitor
+
+instances: 1
+root: 0
+0: accelMonitor / accelMonitor 0 "" "cruisecontrol.strl" %lc: 1 1 0% %lc_end: 13 1 0%
+end:
+
+constants: 1
+0: minPedals $3 value: #3.0f %lc: 3 10 0%
+end:
+
+signals: 2
+0: input: Accel 1 single: 0 bool: 1 %name: Accel% %previous: first:% %lc: 4 7 0%
+1: output: AccelPressed 3 pure: %name: AccelPressed% %previous: 0% %lc: 5 8 0%
+end:
+
+variables: 2
+0: $3 %sigval: 0% %lc: 4 7 0%
+1: $0 %sigbool: 0% %lc: 4 7 0%
+end:
+
+actions: 5
+0: call: $0 (1) (@$0)
+1: present: 0 %lc: 4 7 0%
+2: reset: 0 %lc: 4 7 0%
+3: output: 1 %lc: 5 8 0%
+4: if: $30(0,@0) %lc: 9 5 0%
+end:
+
+halts: 2
+0:  %lc: 13 1 0%
+1:  %lc: 8 5 0%
+end:
+
+-- nets 29
+
+-- optimised nets 14
+
+signature: 127438
+dependencies: 4
+0: Accel InNet  : 1 %name: AUX_ACT_2_0_0% %alias: ACT_2_0_0_0% %inst: 0%
+1: ACT_2_0_0_0_0 OutNet  0 : 2 %name: ACT_2_0_0_0% %inst: 0%
+2: TEST_4_0_0_0_0_IN DoubleNet TEST_4_0_0_0_0_OUT  1 : 4 %name: TEST_4_0_0_0% %emitted: 1% %alias: PRESENT_S1_0_0 AccelPressed__O_0_0 TRACE_S1_0_ TRACE_TEST_4_0_0_% %inst: 0% %lc: 9 27 0% %lc: 10 9 0% %lc: 5 8 0% %sies: 1 0 10 9 0%
+3: AccelPressed OutNet  2 : 3 %name: AccelPressed__O_0_0% %inst: 0%
+end:
+
+registers: 2
+return: ROOT_K0_0_0 0
+halting: ROOT_K1_0_0
+0: BOOT_REGISTER_0_0
+1: PAUSE_REG_1_0_0 halt: 1
+end:
+
+
+endmodule:

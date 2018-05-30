@@ -1,0 +1,17 @@
+module cruiseSpeedMonitor:
+
+constant minSpeed = 30.0f : float;
+constant maxSpeed = 150.0f : float;
+input cruiseSpeed : float;
+output csExceedMin;
+output csExceedMax;
+
+loop
+    await immediate cruiseSpeed;
+    if ?cruiseSpeed > maxSpeed then
+        emit csExceedMax;
+    elsif ?cruiseSpeed < minSpeed then
+        emit csExceedMin;
+    end if;
+end loop
+end module

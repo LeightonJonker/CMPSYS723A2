@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include "cruisecontrol.h"
 
 /*
 DESCRIPTION: Saturate the throttle command to limit the acceleration.
