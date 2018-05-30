@@ -5,7 +5,7 @@ input Accel : float; %Car accelerator sensor
 output AccelPressed; %Signal whether accelerator is pressed or not
 
 loop
-    await immediate Accel;
+    await Accel;
     if ?Accel > minPedals then
         emit AccelPressed;
     end if;

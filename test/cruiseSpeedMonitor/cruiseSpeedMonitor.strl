@@ -7,7 +7,7 @@ output csExceedMin;
 output csExceedMax;
 
 loop
-    await immediate cruiseSpeed;
+    await cruiseSpeed;
     if ?cruiseSpeed > maxSpeed then
         emit csExceedMax;
     elsif ?cruiseSpeed < minSpeed then

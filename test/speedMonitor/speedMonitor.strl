@@ -6,7 +6,7 @@ input Speed : float; %Car speed sensor
 output SpeedExceed; %Signal whether min/max speed exceeded
 
 loop
-    await immediate Speed;
+    await Speed;
     if ?Speed > maxSpeed then
         emit SpeedExceed;
     elsif ?Speed < minSpeed then

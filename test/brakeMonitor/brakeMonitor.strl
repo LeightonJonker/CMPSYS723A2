@@ -5,7 +5,7 @@ input Brake : float; %Car brake sensor
 output BrakePressed; %Signal whether brake is pressed or not
 
 loop
-    await immediate Brake;
+    await Brake;
     if ?Brake > minPedals then
         emit BrakePressed;
     end if;

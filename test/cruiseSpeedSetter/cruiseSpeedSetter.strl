@@ -23,27 +23,22 @@ loop
                 
                 present csExceedMin then
                     emit cruiseSpeed(minSpeed);
-                    pause;
                 end present;
 
-                present csExceedMax then
+                present csExceedMax and not csExceedMin then
                     emit cruiseSpeed(maxSpeed);
-                    pause;
                 end present;
                 
-                present Set then
+                present Set and not (csExceedMin or csExceedMax) then
                     emit cruiseSpeed(?speed);
-                    pause;
                 end present;
                 
-                present QuickDecel then
+                present QuickDecel and not (csExceedMin or csExceedMax or Set) then
                     emit cruiseSpeed(pre(?cruiseSpeed) - SpeedInc);
-                    pause;
                 end present;
 
-                present QuickAccel then
+                present QuickAccel and not (csExceedMin or csExceedMax or Set or QuickDecel) then
                     emit cruiseSpeed(pre(?cruiseSpeed) + SpeedInc);
-                    pause;
                 end present;
                 
             end if;
