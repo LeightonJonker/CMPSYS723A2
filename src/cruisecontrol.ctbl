@@ -1,0 +1,276 @@
+ssc5:
+module:cruisecontrol
+
+instances: 8
+root: 0
+0: cruisecontrol / cruisecontrol 0 "" "cruisecontrol.strl" %lc: 230 1 0% %lc_end: 313 1 0%
+1: accelMonitor / accelMonitor 0 "" "cruisecontrol.strl" %lc: 1 1 1% %lc_end: 13 1 1% %instance: 256 1 0%
+2: brakeMonitor / brakeMonitor 0 "" "cruisecontrol.strl" %lc: 15 1 2% %lc_end: 27 1 2% %instance: 261 1 0%
+3: cruiseSpeedMonitor / cruiseSpeedMonitor 0 "" "cruisecontrol.strl" %lc: 30 1 3% %lc_end: 46 1 3% %instance: 266 1 0%
+4: cruiseSpeedSetter / cruiseSpeedSetter 0 "" "cruisecontrol.strl" %lc: 48 1 4% %lc_end: 111 1 4% %instance: 272 1 0%
+5: cruiseStateResolver / cruiseStateResolver 0 "" "cruisecontrol.strl" %lc: 113 1 5% %lc_end: 189 1 5% %instance: 283 1 0%
+6: speedMonitor / speedMonitor 0 "" "cruisecontrol.strl" %lc: 191 1 6% %lc_end: 206 1 6% %instance: 294 1 0%
+7: throttleController / throttleController 0 "" "cruisecontrol.strl" %lc: 208 1 7% %lc_end: 228 1 7% %instance: 299 1 0%
+end:
+
+constants: 4
+0: minPedals $3 value: #3.0f %lc: 3 10 1%
+1: minSpeed $3 value: #30.0f %lc: 32 10 3%
+2: maxSpeed $3 value: #150.0f %lc: 33 10 3%
+3: SpeedInc $3 value: #2.5f %lc: 50 10 4%
+end:
+
+functions: 1
+0: regulateThrottle ($0,$3,$3): $3 %lc: 211 10 7%
+end:
+
+signals: 19
+0: input: On 1 pure: bool: 0 %name: On% %previous: first:% %lc: 234 7 0%
+1: input: Off 3 pure: bool: 1 %name: Off% %previous: 0% %lc: 235 7 0%
+2: input: Resume 5 pure: bool: 2 %name: Resume% %previous: 1% %lc: 236 7 0%
+3: input: Set 7 pure: bool: 3 %name: Set% %previous: 2% %lc: 237 7 0%
+4: input: QuickDecel 9 pure: bool: 4 %name: QuickDecel% %previous: 3% %lc: 238 7 0%
+5: input: QuickAccel 11 pure: bool: 5 %name: QuickAccel% %previous: 4% %lc: 239 7 0%
+6: input: Accel 13 single: 6 bool: 7 %name: Accel% %previous: 5% %lc: 240 7 0%
+7: input: Brake 16 single: 8 bool: 9 %name: Brake% %previous: 6% %lc: 241 7 0%
+8: input: Speed 19 single: 10 bool: 11 %name: Speed% %previous: 7% %lc: 242 7 0%
+9: output: CruiseSpeed 21 single: 12 %name: CruiseSpeed% %previous: 8% %lc: 245 8 0%
+10: output: ThrottleCmd 23 single: 13 %name: ThrottleCmd% %previous: 9% %lc: 246 8 0%
+11: output: CruiseState 25 single: 14 %name: CruiseState% %previous: 10% %lc: 247 8 0%
+12: local: pure: %name: SpeedExceed% %previous: 11% %lc: 249 8 0%
+13: local: pure: %name: BrakePressed% %previous: 12% %lc: 250 8 0%
+14: local: pure: %name: AccelPressed% %previous: 13% %lc: 251 8 0%
+15: local: single: 15 %name: isGoingOn% %previous: 14% %lc: 252 8 0%
+16: local: pure: %name: csExceedMin% %previous: 15% %lc: 253 8 0%
+17: local: pure: %name: csExceedMax% %previous: 16% %lc: 254 8 0%
+18: exception: pure: %name: T%  %lc: 64 6 4%
+end:
+
+variables: 19
+0: $0 %sigbool: 0% %lc: 234 7 0%
+1: $0 %sigbool: 1% %lc: 235 7 0%
+2: $0 %sigbool: 2% %lc: 236 7 0%
+3: $0 %sigbool: 3% %lc: 237 7 0%
+4: $0 %sigbool: 4% %lc: 238 7 0%
+5: $0 %sigbool: 5% %lc: 239 7 0%
+6: $3 %sigval: 6% %lc: 240 7 0%
+7: $0 %sigbool: 6% %lc: 240 7 0%
+8: $3 %sigval: 7% %lc: 241 7 0%
+9: $0 %sigbool: 7% %lc: 241 7 0%
+10: $3 %sigval: 8% %lc: 242 7 0%
+11: $0 %sigbool: 8% %lc: 242 7 0%
+12: $3 %sigval: 9% %lc: 245 8 0%
+13: $3 %sigval: 10% %lc: 246 8 0%
+14: $1 %sigval: 11% %lc: 247 8 0%
+15: $0 %sigval: 15% %lc: 252 8 0%
+16: $3 %preval: 9% %lc: 34 7 3%
+17: $3 %name: varSpeed% %lc: 63 5 4%
+18: $1 %name: state% %lc: 124 5 5%
+end:
+
+actions: 88
+0: call: $0 (0) (@$0)
+1: present: 0 %lc: 234 7 0%
+2: call: $0 (1) (@$0)
+3: present: 1 %lc: 235 7 0%
+4: call: $0 (2) (@$0)
+5: present: 2 %lc: 236 7 0%
+6: call: $0 (3) (@$0)
+7: present: 3 %lc: 237 7 0%
+8: call: $0 (4) (@$0)
+9: present: 4 %lc: 238 7 0%
+10: call: $0 (5) (@$0)
+11: present: 5 %lc: 239 7 0%
+12: call: $0 (7) (@$0)
+13: present: 6 %lc: 240 7 0%
+14: reset: 6 %lc: 240 7 0%
+15: call: $0 (9) (@$0)
+16: present: 7 %lc: 241 7 0%
+17: reset: 8 %lc: 241 7 0%
+18: call: $0 (11) (@$0)
+19: present: 8 %lc: 242 7 0%
+20: reset: 10 %lc: 242 7 0%
+21: output: 9 %lc: 245 8 0%
+22: reset: 12 %lc: 245 8 0%
+23: output: 10 %lc: 246 8 0%
+24: reset: 13 %lc: 246 8 0%
+25: output: 11 %lc: 247 8 0%
+26: reset: 14 %lc: 247 8 0%
+27: reset: 15 %lc: 252 8 0%
+28: if: $30(6,@0) %lc: 9 5 1%
+29: if: $30(8,@0) %lc: 23 5 2%
+30: reset: 16
+31: call: $3 (16) (12)
+32: if: $30(16,@2) %lc: 40 5 3%
+33: if: $28(16,@1) %lc: 42 5 3%
+34: call: $3 (17) (#0.0f) %lc: 63 5 4%
+35: if: $5($6(14,#1)) %lc: 67 3 4%
+36: call: $3 (17) (10) %lc: 68 4 4%
+37: call: $3 (12) (10) %lc: 69 7 4%
+38: if: $5($6(14,#1)) %lc: 77 5 4%
+39: call: $3 (17) (@1) %lc: 80 10 4%
+40: call: $3 (17) (@2) %lc: 85 10 4%
+41: call: $3 (17) (10) %lc: 90 13 4%
+42: call: $3 (17) ($33(16,@3)) %lc: 95 13 4%
+43: call: $3 (17) ($32(16,@3)) %lc: 100 13 4%
+44: call: $3 (12) (17) %lc: 104 9 4%
+45: call: $1 (18) (#1) %lc: 124 5 5%
+46: if: $6(18,#1) %lc: 128 5 5%
+47: call: $1 (18) (#2) %lc: 130 13 5%
+48: call: $1 (14) (#2) %lc: 131 13 5%
+49: call: $0 (15) (@$1) %lc: 132 13 5%
+50: call: $1 (18) (#1) %lc: 134 13 5%
+51: call: $1 (14) (#1) %lc: 135 13 5%
+52: call: $0 (15) (@$0) %lc: 136 13 5%
+53: if: $6(18,#2) %lc: 138 5 5%
+54: call: $1 (18) (#2) %lc: 140 13 5%
+55: call: $1 (14) (#2) %lc: 141 13 5%
+56: call: $0 (15) (@$0) %lc: 142 13 5%
+57: call: $1 (18) (#4) %lc: 145 13 5%
+58: call: $1 (14) (#4) %lc: 146 13 5%
+59: call: $0 (15) (@$0) %lc: 147 13 5%
+60: call: $1 (18) (#1) %lc: 150 13 5%
+61: call: $1 (14) (#1) %lc: 151 13 5%
+62: call: $0 (15) (@$0) %lc: 152 13 5%
+63: call: $1 (18) (#3) %lc: 155 13 5%
+64: call: $1 (14) (#3) %lc: 156 13 5%
+65: call: $0 (15) (@$0) %lc: 157 13 5%
+66: if: $6(18,#3) %lc: 159 5 5%
+67: call: $1 (18) (#3) %lc: 161 13 5%
+68: call: $1 (14) (#3) %lc: 162 13 5%
+69: call: $0 (15) (@$0) %lc: 163 13 5%
+70: call: $1 (18) (#4) %lc: 166 13 5%
+71: call: $1 (14) (#4) %lc: 167 13 5%
+72: call: $0 (15) (@$0) %lc: 168 13 5%
+73: call: $1 (18) (#2) %lc: 171 13 5%
+74: call: $1 (14) (#2) %lc: 172 13 5%
+75: call: $0 (15) (@$1) %lc: 173 13 5%
+76: if: $6(18,#4) %lc: 175 5 5%
+77: call: $1 (18) (#4) %lc: 177 13 5%
+78: call: $1 (14) (#4) %lc: 178 13 5%
+79: call: $0 (15) (@$0) %lc: 179 13 5%
+80: call: $1 (18) (#2) %lc: 181 13 5%
+81: call: $1 (14) (#2) %lc: 182 13 5%
+82: call: $0 (15) (@$1) %lc: 183 13 5%
+83: if: $30(10,@2) %lc: 200 5 6%
+84: if: $28(10,@1) %lc: 202 5 6%
+85: if: $6(14,#2) %lc: 221 5 7%
+86: call: $3 (13) (0(15,12,10)) %lc: 222 9 7%
+87: call: $3 (13) (#0.0f) %lc: 224 9 7%
+end:
+
+halts: 9
+0:  %lc: 313 1 0%
+1:  %lc: 8 5 1%
+2:  %lc: 22 5 2%
+3:  %lc: 39 2 3%
+4:  %lc: 66 3 4%
+5:  %lc: 76 5 4%
+6:  %lc: 127 5 5%
+7:  %lc: 199 5 6%
+8:  %lc: 220 5 7%
+end:
+
+-- nets 362
+
+-- optimised nets 161
+
+signature: 1697892
+dependencies: 79
+0: Accel InNet  : 13 %name: AUX_ACT_14_0_0% %alias: ACT_14_0_0_0% %inst: 0%
+1: ACT_14_0_0_0_0 OutNet  0 : 14 %name: ACT_14_0_0_0% %inst: 0%
+2: Brake InNet  : 16 %name: AUX_ACT_17_0_0% %alias: ACT_17_0_0_0% %inst: 0%
+3: ACT_17_0_0_0_0 OutNet  2 : 17 %name: ACT_17_0_0_0% %inst: 0%
+4: Speed InNet  : 19 %name: AUX_ACT_20_0_0% %alias: ACT_20_0_0_0% %inst: 0%
+5: ACT_20_0_0_0_0 OutNet  4 : 20 %name: ACT_20_0_0_0% %inst: 0%
+6: ACT_22_0_0_0_0 OutNet  : 22 %name: ACT_22_0_0_0% %inst: 0%
+7: ACT_26_0_0_0_0 OutNet  : 26 %name: ACT_26_0_0_0% %inst: 0%
+8: TEST_46_0_5_0_0_IN DoubleNet TEST_46_0_5_0_0_OUT  : 46 %name: TEST_46_0_5_0% %alias: TRACE_TEST_46_0_5_% %inst: 5% %lc: 128 18 5% %lc: 129 9 5%
+9: On InNet  : 1 %name: SE_94_7_5_0% %inst: 5%
+10: Off InNet  : 3 %name: SE_94_7_5_0% %inst: 5%
+11: ACT_47_0_5_0_0 OutNet  8 9 10 : 47 %name: ACT_47_0_5_0% %inst: 5% %lc: 130 19 5% %lc: 131 13 5% %sies: 11 0 131 13 5%
+12: ACT_48_0_5_0_0 OutNet  7 8 9 10 : 48 %name: ACT_48_0_5_0% %inst: 5% %lc: 131 13 5% %lc: 132 13 5% %sius: 11 0 131 13 5% %sies: 15 0 132 13 5%
+13: ACT_50_0_5_0_0 OutNet  11 : 50 %name: ACT_50_0_5_0% %inst: 5% %lc: 134 19 5% %lc: 135 13 5% %sies: 11 0 135 13 5%
+14: ACT_51_0_5_0_0 OutNet  12 : 51 %name: ACT_51_0_5_0% %inst: 5% %lc: 135 13 5% %lc: 136 13 5% %sius: 11 0 135 13 5% %sies: 15 0 136 13 5%
+15: TEST_53_0_5_0_0_IN DoubleNet TEST_53_0_5_0_0_OUT  13 : 53 %name: TEST_53_0_5_0% %alias: TRACE_TEST_53_0_5_% %inst: 5% %lc: 138 21 5% %lc: 139 9 5%
+16: TEST_83_0_6_0_0_IN DoubleNet TEST_83_0_6_0_0_OUT  5 : 83 %name: TEST_83_0_6_0% %alias: TRACE_TEST_83_0_6_% %inst: 6% %lc: 200 26 6% %lc: 201 9 6% %sies: 12 0 201 9 6%
+17: TEST_84_0_6_0_0_IN DoubleNet TEST_84_0_6_0_0_OUT  16 : 84 %name: TEST_84_0_6_0% %alias: TRACE_TEST_84_0_6_% %inst: 6% %lc: 202 29 6% %lc: 203 9 6% %sies: 12 0 203 9 6%
+18: TEST_28_0_1_0_0_IN DoubleNet TEST_28_0_1_0_0_OUT  1 : 28 %name: TEST_28_0_1_0% %emitted: 14% %alias: PRESENT_S14_0_0 TRACE_S14_0_ TRACE_TEST_28_0_1_% %inst: 1% %lc: 9 27 1% %lc: 10 9 1% %lc: 251 8 0% %sies: 14 0 10 9 1%
+19: TEST_29_0_2_0_0_IN DoubleNet TEST_29_0_2_0_0_OUT  3 : 29 %name: TEST_29_0_2_0% %emitted: 13% %alias: PRESENT_S13_0_0 TRACE_S13_0_ TRACE_TEST_29_0_2_% %inst: 2% %lc: 23 27 2% %lc: 24 9 2% %lc: 250 8 0% %sies: 13 0 24 9 2%
+20: ACT_54_0_5_0_0 OutNet  15 17 18 19 : 54 %name: ACT_54_0_5_0% %inst: 5% %lc: 140 19 5% %lc: 141 13 5% %sies: 11 0 141 13 5%
+21: ACT_55_0_5_0_0 OutNet  14 15 17 18 19 : 55 %name: ACT_55_0_5_0% %inst: 5% %lc: 141 13 5% %lc: 142 13 5% %sius: 11 0 141 13 5% %sies: 15 0 142 13 5%
+22: ACT_56_0_5_0_0 OutNet  10 15 17 18 19 : 56 %name: ACT_56_0_5_0% %inst: 5% %lc: 142 13 5% %sius: 15 0 142 13 5%
+23: ACT_57_0_5_0_0 OutNet  20 : 57 %name: ACT_57_0_5_0% %inst: 5% %lc: 145 19 5% %lc: 146 13 5% %sies: 11 0 146 13 5%
+24: ACT_58_0_5_0_0 OutNet  21 : 58 %name: ACT_58_0_5_0% %inst: 5% %lc: 146 13 5% %lc: 147 13 5% %sius: 11 0 146 13 5% %sies: 15 0 147 13 5%
+25: ACT_59_0_5_0_0 OutNet  22 : 59 %name: ACT_59_0_5_0% %inst: 5% %lc: 147 13 5% %sius: 15 0 147 13 5%
+26: ACT_60_0_5_0_0 OutNet  23 : 60 %name: ACT_60_0_5_0% %inst: 5% %lc: 150 19 5% %lc: 151 13 5% %sies: 11 0 151 13 5%
+27: ACT_61_0_5_0_0 OutNet  24 : 61 %name: ACT_61_0_5_0% %inst: 5% %lc: 151 13 5% %lc: 152 13 5% %sius: 11 0 151 13 5% %sies: 15 0 152 13 5%
+28: ACT_62_0_5_0_0 OutNet  9 25 : 62 %name: ACT_62_0_5_0% %inst: 5% %lc: 152 13 5% %sius: 15 0 152 13 5%
+29: ACT_63_0_5_0_0 OutNet  26 : 63 %name: ACT_63_0_5_0% %inst: 5% %lc: 155 19 5% %lc: 156 13 5% %sies: 11 0 156 13 5%
+30: ACT_64_0_5_0_0 OutNet  27 : 64 %name: ACT_64_0_5_0% %inst: 5% %lc: 156 13 5% %lc: 157 13 5% %sius: 11 0 156 13 5% %sies: 15 0 157 13 5%
+31: TEST_66_0_5_0_0_IN DoubleNet TEST_66_0_5_0_0_OUT  29 : 66 %name: TEST_66_0_5_0% %alias: TRACE_TEST_66_0_5_% %inst: 5% %lc: 159 21 5% %lc: 160 9 5%
+32: Resume InNet  : 5 %name: SE_143_17_5_0% %inst: 5%
+33: ACT_67_0_5_0_0 OutNet  31 32 : 67 %name: ACT_67_0_5_0% %inst: 5% %lc: 161 19 5% %lc: 162 13 5% %sies: 11 0 162 13 5%
+34: ACT_68_0_5_0_0 OutNet  30 31 32 : 68 %name: ACT_68_0_5_0% %inst: 5% %lc: 162 13 5% %lc: 163 13 5% %sius: 11 0 162 13 5% %sies: 15 0 163 13 5%
+35: ACT_69_0_5_0_0 OutNet  28 31 32 : 69 %name: ACT_69_0_5_0% %inst: 5% %lc: 163 13 5% %sius: 15 0 163 13 5%
+36: ACT_70_0_5_0_0 OutNet  33 : 70 %name: ACT_70_0_5_0% %inst: 5% %lc: 166 19 5% %lc: 167 13 5% %sies: 11 0 167 13 5%
+37: ACT_71_0_5_0_0 OutNet  34 : 71 %name: ACT_71_0_5_0% %inst: 5% %lc: 167 13 5% %lc: 168 13 5% %sius: 11 0 167 13 5% %sies: 15 0 168 13 5%
+38: ACT_72_0_5_0_0 OutNet  35 : 72 %name: ACT_72_0_5_0% %inst: 5% %lc: 168 13 5% %sius: 15 0 168 13 5%
+39: ACT_73_0_5_0_0 OutNet  36 : 73 %name: ACT_73_0_5_0% %inst: 5% %lc: 171 19 5% %lc: 172 13 5% %sies: 11 0 172 13 5%
+40: ACT_74_0_5_0_0 OutNet  37 : 74 %name: ACT_74_0_5_0% %inst: 5% %lc: 172 13 5% %lc: 173 13 5% %sius: 11 0 172 13 5% %sies: 15 0 173 13 5%
+41: TEST_76_0_5_0_0_IN DoubleNet TEST_76_0_5_0_0_OUT  39 : 76 %name: TEST_76_0_5_0% %alias: TRACE_TEST_76_0_5_% %inst: 5% %lc: 175 21 5% %lc: 176 9 5%
+42: ACT_77_0_5_0_0 OutNet  41 : 77 %name: ACT_77_0_5_0% %inst: 5% %lc: 177 19 5% %lc: 178 13 5% %sies: 11 0 178 13 5%
+43: ACT_78_0_5_0_0 OutNet  40 41 : 78 %name: ACT_78_0_5_0% %inst: 5% %lc: 178 13 5% %lc: 179 13 5% %sius: 11 0 178 13 5% %sies: 15 0 179 13 5%
+44: ACT_80_0_5_0_0 OutNet  42 : 80 %name: ACT_80_0_5_0% %inst: 5% %lc: 181 19 5% %lc: 182 13 5% %sies: 11 0 182 13 5%
+45: ACT_81_0_5_0_0 OutNet  43 : 81 %name: ACT_81_0_5_0% %inst: 5% %lc: 182 13 5% %lc: 183 13 5% %sius: 11 0 182 13 5% %sies: 15 0 183 13 5%
+46: TEST_35_0_4_0_0_IN DoubleNet TEST_35_0_4_0_0_OUT  45 : 35 %name: TEST_35_0_4_0% %emitted: 18% %alias: CONT_62_0_0 ACT_36_0_4_0 CONT_65_0_0 ACT_37_0_4_0 PRESENT_S18_4_0 TRACE_S18_4_ TRACE_TEST_35_0_4_ TRACE_ACT_36_0_4_ TRACE_ACT_37_0_4_% %inst: 4% %lc: 67 29 4% %lc: 69 7 4% %lc: 68 13 4% %lc: 70 7 4% %lc: 64 6 4%
+47: ACT_36_0_4_0_0 OutNet  5 46 : 36 %name: ACT_36_0_4_0% %inst: 4% %lc: 68 13 4% %lc: 69 7 4% %sies: 9 0 69 7 4%
+48: ACT_37_0_4_0_0 OutNet  5 6 46 : 37 %name: ACT_37_0_4_0% %inst: 4% %lc: 69 7 4% %lc: 70 7 4% %sius: 9 0 69 7 4% %sies: 18 0 70 7 4%
+49: TEST_38_0_4_0_0_IN DoubleNet TEST_38_0_4_0_0_OUT  45 : 38 %name: TEST_38_0_4_0% %alias: TRACE_TEST_38_0_4_% %inst: 4% %lc: 77 31 4% %lc: 79 9 4%
+50: TEST_32_0_3_0_0_IN DoubleNet TEST_32_0_3_0_0_OUT  : 32 %name: TEST_32_0_3_0% %emitted: 17% %alias: PRESENT_S17_0_0 TRACE_S17_0_ TRACE_TEST_32_0_3_% %inst: 3% %lc: 40 37 3% %lc: 41 9 3% %lc: 254 8 0% %sies: 17 0 41 9 3%
+51: TEST_33_0_3_0_0_IN DoubleNet TEST_33_0_3_0_0_OUT  50 : 33 %name: TEST_33_0_3_0% %emitted: 16% %alias: PRESENT_S16_0_0 TRACE_S16_0_ TRACE_TEST_33_0_3_% %inst: 3% %lc: 42 40 3% %lc: 43 9 3% %lc: 253 8 0% %sies: 16 0 43 9 3%
+52: ACT_39_0_4_0_0 OutNet  47 49 51 : 39 %name: ACT_39_0_4_0% %inst: 4% %lc: 80 19 4%
+53: ACT_40_0_4_0_0 OutNet  52 : 40 %name: ACT_40_0_4_0% %inst: 4% %lc: 85 19 4%
+54: Set InNet  : 7 %name: SE_79_4_4_0% %inst: 4%
+55: ACT_41_0_4_0_0 OutNet  53 54 : 41 %name: ACT_41_0_4_0% %inst: 4% %lc: 90 22 4%
+56: QuickDecel InNet  : 9 %name: SE_82_2_4_0% %inst: 4%
+57: ACT_42_0_4_0_0 OutNet  55 56 : 42 %name: ACT_42_0_4_0% %inst: 4% %lc: 95 22 4%
+58: QuickAccel InNet  : 11 %name: SE_84_0_4_0% %inst: 4%
+59: ACT_43_0_4_0_0 OutNet  57 58 : 43 %name: ACT_43_0_4_0% %inst: 4% %lc: 100 22 4%
+60: ACT_44_0_4_0_0 OutNet  48 59 : 44 %name: ACT_44_0_4_0% %inst: 4% %lc: 104 9 4% %sius: 9 0 104 9 4%
+61: CruiseSpeed OutNet  60 : 21 %name: CruiseSpeed__O_0_0% %inst: 0%
+62: ACT_30_0_0_0_0 OutNet  59 : 30 %name: ACT_30_0_0_0% %inst: 0%
+63: ACT_27_0_0_0_0 OutNet  38 : 27 %name: ACT_27_0_0_0% %inst: 0% %lc: 260 1 0% %lc: 256 1 0% %lc: 261 1 0% %lc: 266 1 0% %lc: 272 1 0% %lc: 283 1 0% %lc: 294 1 0% %lc: 299 1 0%
+64: ACT_34_0_4_0_0 OutNet  60 : 34 %name: ACT_34_0_4_0% %inst: 4% %lc: 63 5 4%
+65: ACT_45_0_5_0_0 OutNet  44 : 45 %name: ACT_45_0_5_0% %inst: 5% %lc: 124 5 5%
+66: ACT_49_0_5_0_0 OutNet  63 : 49 %name: ACT_49_0_5_0% %inst: 5% %lc: 132 13 5% %sius: 15 0 132 13 5%
+67: ACT_52_0_5_0_0 OutNet  66 : 52 %name: ACT_52_0_5_0% %inst: 5% %lc: 136 13 5% %sius: 15 0 136 13 5%
+68: ACT_65_0_5_0_0 OutNet  67 : 65 %name: ACT_65_0_5_0% %inst: 5% %lc: 157 13 5% %sius: 15 0 157 13 5%
+69: ACT_75_0_5_0_0 OutNet  68 : 75 %name: ACT_75_0_5_0% %inst: 5% %lc: 173 13 5% %sius: 15 0 173 13 5%
+70: ACT_79_0_5_0_0 OutNet  41 69 : 79 %name: ACT_79_0_5_0% %inst: 5% %lc: 179 13 5% %sius: 15 0 179 13 5%
+71: ACT_82_0_5_0_0 OutNet  70 : 82 %name: ACT_82_0_5_0% %inst: 5% %lc: 183 13 5% %sius: 15 0 183 13 5%
+72: TEST_85_0_7_0_0_IN DoubleNet TEST_85_0_7_0_0_OUT  45 : 85 %name: TEST_85_0_7_0% %alias: CONT_198_0_0 ACT_86_0_7_0 TRACE_TEST_85_0_7_ TRACE_ACT_86_0_7_% %inst: 7% %lc: 221 25 7% %lc: 222 9 7% %sies: 10 0 222 9 7%
+73: ACT_86_0_7_0_0 OutNet  61 71 72 : 86 %name: ACT_86_0_7_0% %inst: 7% %lc: 222 9 7% %sius: 10 0 222 9 7%
+74: ACT_87_0_7_0_0 OutNet  73 : 87 %name: ACT_87_0_7_0% %inst: 7% %lc: 224 9 7% %sius: 10 0 224 9 7%
+75: PRE_ACT9_0_0_0 OutNet  9 10 17 18 19 32 41 61 62 72 : 31 %name: PRE_ACT9_0_0% %inst: 0%
+76: ACT_24_0_0_0_0 OutNet  74 : 24 %name: ACT_24_0_0_0% %inst: 0%
+77: ThrottleCmd OutNet  76 : 23 %name: ThrottleCmd__O_0_0% %inst: 0%
+78: CruiseState OutNet  46 49 72 : 25 %name: CruiseState__O_0_0% %inst: 0%
+end:
+
+registers: 9
+return: ROOT_K0_0_0 0
+halting: ROOT_K1_0_0
+0: BOOT_REGISTER_0_0
+1: PAUSE_REG_36_1_0 halt: 1
+2: PAUSE_REG_42_2_0 halt: 2
+3: PAUSE_REG_48_3_0 halt: 3
+4: PAUSE_REG_58_4_0 halt: 4
+5: PAUSE_REG_71_4_0 halt: 5
+6: PAUSE_REG_91_5_0 halt: 6
+7: PAUSE_REG_184_6_0 halt: 7
+8: PAUSE_REG_193_7_0 halt: 8
+end:
+
+
+endmodule:
