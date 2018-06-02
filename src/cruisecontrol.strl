@@ -196,11 +196,10 @@ input isGoingOn : boolean;
 input CruiseSpeed : float;
 input Speed : float;
 input Accel : float;
-input AccelPressed;
 output ThrottleCmd : float;
 
 loop
-    await tick;
+    await CruiseState;
     if ?CruiseState = 2 then
         emit ThrottleCmd(regulateThrottle(?isGoingOn,?CruiseSpeed,?Speed));
     else
