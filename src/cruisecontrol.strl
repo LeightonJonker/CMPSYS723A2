@@ -26,25 +26,6 @@ loop
 end loop
 end module
 
-
-module cruiseSpeedMonitor:
-
-constant minSpeed = 30.0f : float;
-constant maxSpeed = 150.0f : float;
-input CruiseSpeed : float;
-output csExceedMin;
-output csExceedMax;
-
-loop
-	await tick;
-    if pre(?CruiseSpeed) > maxSpeed then
-        emit csExceedMax;
-    elsif pre(?CruiseSpeed) < minSpeed then
-        emit csExceedMin;
-    end if;
-end loop
-end module
-
 module cruiseSpeedSetter:
 
 constant SpeedInc = 2.5f : float;
@@ -55,15 +36,13 @@ input CruiseState : integer; %1 = OFF, 2 = ON, 3 = STDBY, 4 = DISABLE
 input Set;
 input QuickAccel;
 input QuickDecel;
-input csExceedMin;
-input csExceedMax;
 input Speed : float;
 output CruiseSpeed : float;
 
 var varSpeed := 0.0f : float in
 trap T in
 	loop	
-		await tick;
+		await CruiseState;
 		if not (?CruiseState = 1) then
 			varSpeed := ?Speed;
 		    emit CruiseSpeed(?Speed);
@@ -73,38 +52,30 @@ trap T in
 end trap;
 
 loop
-    await tick;
+    await CruiseState;
     if not (?CruiseState = 1) then
         
-        present csExceedMin then
-        	varSpeed := minSpeed;
-            %emit CruiseSpeed(minSpeed);
-        end present;
-
-        present csExceedMax and not csExceedMin then
-        	varSpeed := maxSpeed;
-            %emit CruiseSpeed(maxSpeed);
-        end present;
-        
-        present Set and not (csExceedMin or csExceedMax) then
+        present Set then
             varSpeed := ?Speed;
-            %emit CruiseSpeed(?Speed);
         end present;
         
-        present QuickDecel and not (csExceedMin or csExceedMax or Set) then
-            varSpeed := pre(?CruiseSpeed) - SpeedInc;
-            %emit CruiseSpeed(pre(?CruiseSpeed) - SpeedInc);
+        present QuickDecel and not Set then
+            varSpeed := varSpeed - SpeedInc;
         end present;
 
-        present QuickAccel and not (csExceedMin or csExceedMax or Set or QuickDecel) then
-            varSpeed := pre(?CruiseSpeed) + SpeedInc;
-            %emit CruiseSpeed(pre(?CruiseSpeed) + SpeedInc);
+        present QuickAccel and not (Set or QuickDecel) then
+            varSpeed := varSpeed + SpeedInc;
         end present;
+        
+        if (varSpeed > maxSpeed) then
+        	varSpeed := maxSpeed;
+    	elsif (varSpeed < minSpeed) then
+    		varSpeed := minSpeed;
+		end if;
         
         emit CruiseSpeed(varSpeed);
         
     end if;
-    %emit CruiseSpeed(varSpeed);
 end loop;
 
 end var;
@@ -126,7 +97,7 @@ loop
 
     await tick;
     if state = 1 then
-        present (On and not Off) then
+        present (On and not Off and not SpeedExceed) then
             state := 2;
             emit CruiseState(2);
             emit isGoingOn(true);
@@ -214,6 +185,8 @@ input CruiseState : integer;
 input isGoingOn : boolean;
 input CruiseSpeed : float;
 input Speed : float;
+input Accel : float;
+input AccelPressed;
 output ThrottleCmd : float;
 
 loop
@@ -221,7 +194,7 @@ loop
     if ?CruiseState = 2 then
         emit ThrottleCmd(regulateThrottle(?isGoingOn,?CruiseSpeed,?Speed));
     else
-        emit ThrottleCmd(0.0f);
+		emit ThrottleCmd(?Accel);
     end if;
 end loop
 
@@ -250,8 +223,6 @@ signal SpeedExceed in
 signal BrakePressed in
 signal AccelPressed in
 signal isGoingOn : boolean in
-signal csExceedMin in
-signal csExceedMax in
 
 run accelMonitor[
 					signal Accel/Accel;
@@ -263,19 +234,11 @@ run brakeMonitor[
 					signal BrakePressed/BrakePressed
 				]
 ||
-run cruiseSpeedMonitor[
-					  	signal CruiseSpeed/CruiseSpeed;
-					  	signal csExceedMin/csExceedMin;
-					  	signal csExceedMax/csExceedMax
-					  ]
-||
 run cruiseSpeedSetter[
 						signal CruiseState/CruiseState;
 					 	signal Set/Set;
 					 	signal QuickAccel/QuickAccel;
 					 	signal QuickDecel/QuickDecel;
-					 	signal csExceedMin/csExceedMin;
-					 	signal csExceedMax/csExceedMax;
 					 	signal Speed/Speed;
 					 	signal CruiseSpeed/CruiseSpeed
 					 ]
@@ -301,10 +264,9 @@ run throttleController[
 							signal isGoingOn/isGoingOn;
 							signal CruiseSpeed/CruiseSpeed;
 							signal Speed/Speed;
-							signal ThrottleCmd/ThrottleCmd
+							signal ThrottleCmd/ThrottleCmd;
+							signal Accel/Accel
 					  ]
-end signal;
-end signal;
 end signal;
 end signal;
 end signal;
