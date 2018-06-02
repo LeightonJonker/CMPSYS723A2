@@ -128,6 +128,11 @@ loop
             emit isGoingOn(false);
         end present;
     elsif state = 3 then
+        present Off then
+            state := 1;
+            emit CruiseState(1);
+            emit isGoingOn(false);
+        end present;
         present (BrakePressed or not Resume) then
             state := 3;
             emit CruiseState(3);
@@ -144,6 +149,11 @@ loop
             emit isGoingOn(true);
         end present;
     elsif state = 4 then
+        present Off then
+            state := 1;
+            emit CruiseState(1);
+            emit isGoingOn(false);
+        end present;
         present (SpeedExceed or AccelPressed) then
             state := 4;
             emit CruiseState(4);
