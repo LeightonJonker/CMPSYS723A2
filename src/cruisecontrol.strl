@@ -158,11 +158,17 @@ loop
             emit CruiseState(1);
             emit isGoingOn(false);
         end present;
-        present (SpeedExceed or AccelPressed) then
+        present (SpeedExceed or AccelPressed) and not (Off or BrakePressed) then
             state := 4;
             emit CruiseState(4);
             emit isGoingOn(false);
-        else
+        end present;
+        present BrakePressed and not Off then
+            state := 3;
+            emit CruiseState(3);
+            emit isGoingOn(false);
+        end present;
+        present not (SpeedExceed or AccelPressed or BrakePressed or Off) then
             state := 2;
             emit CruiseState(2);
             emit isGoingOn(true);
