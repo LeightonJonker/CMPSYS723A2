@@ -40,44 +40,48 @@ input Speed : float;
 output CruiseSpeed : float;
 
 var varSpeed := 0.0f : float in
-trap T in
-	loop	
-		await CruiseState;
-		if not (?CruiseState = 1) then
-			varSpeed := ?Speed;
-		    emit CruiseSpeed(?Speed);
-		    exit T;
-		end if;
-	end loop;
-end trap;
-
 loop
-    await CruiseState;
-    if not (?CruiseState = 1) then
-        
-        present Set then
-            varSpeed := ?Speed;
-        end present;
-        
-        present QuickDecel and not Set then
-            varSpeed := varSpeed - SpeedInc;
-        end present;
+    trap T in
+        loop	
+            await CruiseState;
+            if not (?CruiseState = 1) then
+                varSpeed := ?Speed;
+                emit CruiseSpeed(?Speed);
+                exit T;
+            end if;
+        end loop;
+    end trap;
 
-        present QuickAccel and not (Set or QuickDecel) then
-            varSpeed := varSpeed + SpeedInc;
-        end present;
-        
-        if (varSpeed > maxSpeed) then
-        	varSpeed := maxSpeed;
-    	elsif (varSpeed < minSpeed) then
-    		varSpeed := minSpeed;
-		end if;
-        
-        emit CruiseSpeed(varSpeed);
-        
-    end if;
+    trap T in
+        loop
+            await CruiseState;
+            if (?CruiseState = 1) then
+                exit T;
+            else                
+                present Set then
+                    varSpeed := ?Speed;
+                end present;
+                
+                present QuickDecel and not Set then
+                    varSpeed := varSpeed - SpeedInc;
+                end present;
+
+                present QuickAccel and not (Set or QuickDecel) then
+                    varSpeed := varSpeed + SpeedInc;
+                end present;
+                
+                if (varSpeed > maxSpeed) then
+                    varSpeed := maxSpeed;
+                elsif (varSpeed < minSpeed) then
+                    varSpeed := minSpeed;
+                end if;
+                
+                emit CruiseSpeed(varSpeed);
+                
+            end if;
+        end loop;
+    end trap;
 end loop;
-
 end var;
 end module
 
